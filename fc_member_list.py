@@ -1,8 +1,9 @@
-import requests
-from requests.exceptions import HTTPError
 import logging
 from multiprocessing.pool import Pool
-from time import time, sleep
+from time import sleep, time
+
+import requests
+from requests.exceptions import HTTPError
 
 startTime = time()
 
@@ -11,11 +12,14 @@ privatekey = privatekeyfile.read()
 
 
 def characteroutput(character):
-    if privatekey != '':
-        requesturl = f'https://xivapi.com/character/{character}?columns=Character.Name' \
-                     f'&private_key={privatekey}'
+    # XIVAPI private keys allow for higher rate limits
+    if privatekey != "":
+        requesturl = (
+            f"https://xivapi.com/character/{character}?columns=Character.Name"
+            f"&private_key={privatekey}"
+        )
     else:
-        requesturl = f'https://xivapi.com/character/{character}?columns=Character.Name'
+        requesturl = f"https://xivapi.com/character/{character}?columns=Character.Name"
 
     char_attempt = 1
     error_count = 0
@@ -27,36 +31,49 @@ def characteroutput(character):
             characteracjson = response.json()
         except HTTPError as char_http_err:
             if char_attempt <= 3:
-                logging.info(f'HTTP error occurred: {char_http_err}. Trying {4 - char_attempt} more time(s)')
+                logging.info(
+                    f"HTTP error occurred: {char_http_err}. Trying {4 - char_attempt} more time(s)"
+                )
                 char_attempt += 1
                 sleep(char_attempt)
                 continue
             else:
-                logging.warning(f'HTTP error occurred: {char_http_err}. Achievement request for {character} failed')
+                logging.warning(
+                    f"HTTP error occurred: {char_http_err}. Achievement request for {character} failed"
+                )
                 error_count += 1
                 return
         except Exception as ac_err:
             if char_attempt <= 3:
-                logging.info(f'HTTP error occurred: {ac_err}. Trying {4 - char_attempt} more time(s)')
+                logging.info(
+                    f"HTTP error occurred: {ac_err}. Trying {4 - char_attempt} more time(s)"
+                )
                 char_attempt += 1
                 sleep(char_attempt)
                 continue
             else:
-                logging.warning(f'HTTP error occurred: {ac_err}. Achievement request for {character} failed')
+                logging.warning(
+                    f"HTTP error occurred: {ac_err}. Achievement request for {character} failed"
+                )
                 error_count += 1
                 return
         break
 
-    print(characteracjson['Character']['Name'])
+    # Current output logic only outputs to the terminal. Need to update this to allow for a file
+    print(characteracjson["Character"]["Name"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     freeCompanyID = input("Enter FC ID: ")
-    fcDataRequestUrl = f"https://xivapi.com/freecompany/{freeCompanyID}?columns=FreeCompany.ActiveMemberCount," \
-                       f"FreeCompany.ID,FreeCompany.Name,FreeCompany.Server,FreeCompany.Tag"
-    fcMembersRequestUrl = f"https://xivapi.com/freecompany/{freeCompanyID}?data=FCM&columns=FreeCompanyMembers.*.ID," \
-                          f"FreeCompanyMembers.*.Name"
+    fcDataRequestUrl = (
+        f"https://xivapi.com/freecompany/{freeCompanyID}?columns=FreeCompany.ActiveMemberCount,"
+        f"FreeCompany.ID,FreeCompany.Name,FreeCompany.Server,FreeCompany.Tag"
+    )
+    fcMembersRequestUrl = (
+        f"https://xivapi.com/freecompany/{freeCompanyID}?data=FCM&columns=FreeCompanyMembers.*.ID,"
+        f"FreeCompanyMembers.*.Name"
+    )
 
     # Retrieving general FC information
     attempt = 1
@@ -67,22 +84,30 @@ if __name__ == '__main__':
             fcDataJson = fcDataApiResponse.json()
         except HTTPError as http_err:
             if attempt <= 3:
-                logging.warning(f'HTTP error occurred during FC data request: {http_err}. Retrying {4 - attempt} more '
-                                f'time(s)')
+                logging.warning(
+                    f"HTTP error occurred during FC data request: {http_err}. Retrying {4 - attempt} more "
+                    f"time(s)"
+                )
                 attempt += 1
                 sleep(attempt)
                 continue
             else:
-                logging.critical(f'Final HTTP error occurred during FC data request: {http_err}. Failed to get info '
-                                 f'for FC ID: {freeCompanyID}')
+                logging.critical(
+                    f"Final HTTP error occurred during FC data request: {http_err}. Failed to get info "
+                    f"for FC ID: {freeCompanyID}"
+                )
         except Exception as err:
             if attempt <= 3:
-                logging.warning(f'Other error occurred: {err}. Retrying {4 - attempt} more time(s)')
+                logging.warning(
+                    f"Other error occurred: {err}. Retrying {4 - attempt} more time(s)"
+                )
                 attempt += 1
                 sleep(attempt)
                 continue
             else:
-                logging.error(f'Other error occurred: {err}. Failed to get info for FC ID: {freeCompanyID}')
+                logging.error(
+                    f"Other error occurred: {err}. Failed to get info for FC ID: {freeCompanyID}"
+                )
         break
 
     # Retrieving FC members list
@@ -94,31 +119,39 @@ if __name__ == '__main__':
             fcMembersJson = fcMembersApiResponse.json()
         except HTTPError as http_err:
             if attempt <= 3:
-                logging.warning(f'HTTP error occurred: {http_err}. Retrying {4 - attempt} more time(s)')
+                logging.warning(
+                    f"HTTP error occurred: {http_err}. Retrying {4 - attempt} more time(s)"
+                )
                 attempt += 1
                 sleep(attempt)
                 continue
             else:
-                logging.error(f'HTTP error occurred: {http_err}. Failed to get members for FC ID: {freeCompanyID}')
+                logging.error(
+                    f"HTTP error occurred: {http_err}. Failed to get members for FC ID: {freeCompanyID}"
+                )
         except Exception as err:
             if attempt <= 3:
-                logging.warning(f'Other error occurred: {err}. Retrying {4 - attempt} more time(s)')
+                logging.warning(
+                    f"Other error occurred: {err}. Retrying {4 - attempt} more time(s)"
+                )
                 attempt += 1
                 sleep(attempt)
                 continue
             else:
-                logging.error(f'Other error occurred: {err}. Failed to get members for FC ID: {freeCompanyID}')
+                logging.error(
+                    f"Other error occurred: {err}. Failed to get members for FC ID: {freeCompanyID}"
+                )
         break
 
     # Setting FC member count for later
     fcMemberCount = fcDataJson["FreeCompany"]["ActiveMemberCount"]
     fcName = fcDataJson["FreeCompany"]["Name"]
-    fcMemberIds = [f['ID'] for f in fcMembersJson["FreeCompanyMembers"]]
+    fcMemberIds = [f["ID"] for f in fcMembersJson["FreeCompanyMembers"]]
 
-    print(f'\n{fcName} has {fcMemberCount} members\n')
+    print(f"\n{fcName} has {fcMemberCount} members\n")
 
     with Pool(4) as p:
-        # Return format [ucob_count, uwu_count, tea_count, hidden_achievements, error_count]
+        # Threading calls out to get the list of characters
         thread_finals = p.map(characteroutput, fcMemberIds)
 
     finalTime = time() - startTime
