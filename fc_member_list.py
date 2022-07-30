@@ -11,7 +11,7 @@ privatekeyfile = open("private.txt", "r")
 privatekey = privatekeyfile.read()
 
 
-def characteroutput(character):
+def character_output(character):
     # XIVAPI private keys allow for higher rate limits
     if privatekey != "":
         requesturl = (
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
     with Pool(4) as p:
         # Threading calls out to get the list of characters
-        thread_finals = p.map(characteroutput, fcMemberIds)
+        thread_finals = p.map(character_output, fcMemberIds)
 
     finalTime = time() - startTime
     print(f'Script took {"{:.2f}".format(finalTime)} seconds')
