@@ -5,6 +5,7 @@ from time import sleep, time
 import requests
 from requests.exceptions import HTTPError
 
+
 startTime = time()
 
 privatekeyfile = open("private.txt", "r")
@@ -13,13 +14,14 @@ privatekey = privatekeyfile.read()
 
 def character_output(character):
     # XIVAPI private keys allow for higher rate limits
-    if privatekey != "":
+    """if privatekey != "":
         requesturl = (
             f"https://xivapi.com/character/{character}?columns=Character.Name"
             f"&private_key={privatekey}"
         )
-    else:
-        requesturl = f"https://xivapi.com/character/{character}?columns=Character.Name"
+    else:"""
+
+    requesturl = f"https://xivapi.com/character/{character}?columns=Character.Name"
 
     char_attempt = 1
     error_count = 0
@@ -63,15 +65,22 @@ def character_output(character):
     print(characteracjson["Character"]["Name"])
 
 
+def get_fc_info(fcid):
+    pass
+
+
 if __name__ == "__main__":
 
-    freeCompanyID = input("Enter FC ID: ")
+    freeCompanyId = input("Enter FC ID: ")
+
+    get_fc_info(freeCompanyId)
+
     fcDataRequestUrl = (
-        f"https://xivapi.com/freecompany/{freeCompanyID}?columns=FreeCompany.ActiveMemberCount,"
+        f"https://xivapi.com/freecompany/{freeCompanyId}?columns=FreeCompany.ActiveMemberCount,"
         f"FreeCompany.ID,FreeCompany.Name,FreeCompany.Server,FreeCompany.Tag"
     )
     fcMembersRequestUrl = (
-        f"https://xivapi.com/freecompany/{freeCompanyID}?data=FCM&columns=FreeCompanyMembers.*.ID,"
+        f"https://xivapi.com/freecompany/{freeCompanyId}?data=FCM&columns=FreeCompanyMembers.*.ID,"
         f"FreeCompanyMembers.*.Name"
     )
 
@@ -94,7 +103,7 @@ if __name__ == "__main__":
             else:
                 logging.critical(
                     f"Final HTTP error occurred during FC data request: {http_err}. Failed to get info "
-                    f"for FC ID: {freeCompanyID}"
+                    f"for FC ID: {freeCompanyId}"
                 )
         except Exception as err:
             if attempt <= 3:
@@ -106,7 +115,7 @@ if __name__ == "__main__":
                 continue
             else:
                 logging.error(
-                    f"Other error occurred: {err}. Failed to get info for FC ID: {freeCompanyID}"
+                    f"Other error occurred: {err}. Failed to get info for FC ID: {freeCompanyId}"
                 )
         break
 
@@ -127,7 +136,7 @@ if __name__ == "__main__":
                 continue
             else:
                 logging.error(
-                    f"HTTP error occurred: {http_err}. Failed to get members for FC ID: {freeCompanyID}"
+                    f"HTTP error occurred: {http_err}. Failed to get members for FC ID: {freeCompanyId}"
                 )
         except Exception as err:
             if attempt <= 3:
@@ -139,7 +148,7 @@ if __name__ == "__main__":
                 continue
             else:
                 logging.error(
-                    f"Other error occurred: {err}. Failed to get members for FC ID: {freeCompanyID}"
+                    f"Other error occurred: {err}. Failed to get members for FC ID: {freeCompanyId}"
                 )
         break
 
