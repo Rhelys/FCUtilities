@@ -50,6 +50,7 @@ def get_fc_info(fc_id, privatekey):
                 )
                 exit()
         break
+    print(f"Successfully pulled basic FC data")
     return fc_data
 
 
@@ -97,12 +98,15 @@ def get_fc_members(fc_id, privatekey):
                 )
                 exit()
         break
+    print(f"Successfully pulled FC member list")
     return fc_member_list
 
 
 def character_output(privatekey, character):
 
-    character_request = f"https://xivapi.com/character/{character}?columns=Character.Name"
+    character_request = (
+        f"https://xivapi.com/character/{character}?columns=Character.Name"
+    )
 
     # Adding in the user's API key if provided
     if privatekey:

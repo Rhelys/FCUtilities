@@ -1,4 +1,3 @@
-import logging
 from multiprocessing.pool import Pool
 from time import time
 from functools import partial
@@ -11,8 +10,9 @@ startTime = time()
 
 if __name__ == "__main__":
     # Setting up the user's API Key if it exists
+    # If your private key file is full of garbage, you'll get 400s later on
+    # Not sure how to effectively pre-validate this though since I don't own the key validation
     privatekey = False
-
     if os.path.exists("private.txt"):
         privatekeyfile = open("private.txt", "r")
         privatekey = privatekeyfile.read()
@@ -31,14 +31,17 @@ if __name__ == "__main__":
 
     print(f"\n{fc_name} has {fc_member_count} members\n")
 
-    with Pool(4) as p:
+    with Pool(10) as p:
         # Threading calls out to get the list of characters
-        thread_finals = p.map(partial(xivapi.character_output, privatekey), fc_member_ids)
+        thread_finals = p.map(
+            partial(xivapi.character_output, privatekey), fc_member_ids
+        )
 
     finalTime = time() - startTime
     print(f'Script took {"{:.2f}".format(finalTime)} seconds')
 
-# print(fcMembersJson["FreeCompanyMembers"][0]["ID"])
+# Reference values for testing
+
 # Large FC - Black Waltz ID: 9229001536389057973
 # Medium FC - Kings FC ID: 9229001536388989429
 # Small FC - Bungo FC ID (Mill): 9232238498621260475
