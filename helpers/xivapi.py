@@ -4,19 +4,25 @@ from requests.exceptions import HTTPError
 from time import sleep
 
 
-def get_fc_info(fc_id):
+def get_fc_info(fc_id, privatekey):
     fc_request = (
         f"https://xivapi.com/freecompany/{fc_id}?columns=FreeCompany.ActiveMemberCount,"
         f"FreeCompany.ID,FreeCompany.Name,FreeCompany.Server,FreeCompany.Tag"
     )
 
+    # Adding in the user's API key if provided
+    if privatekey:
+        fc_request += f"&private_key={privatekey}"
+
     # Retrieving general FC information
-    attempt = 1
+    attempt = 0
     while True:
         try:
             fc_response = requests.get(fc_request)
             fc_response.raise_for_status()
             fc_data = fc_response.json()
+            attempt += 1
+
         except HTTPError as http_err:
             if attempt <= 3:
                 logging.warning(
@@ -36,7 +42,6 @@ def get_fc_info(fc_id):
                 logging.warning(
                     f"Other error occurred: {err}. Retrying {4 - attempt} more time(s)"
                 )
-                attempt += 1
                 sleep(attempt)
                 continue
             else:
@@ -48,7 +53,7 @@ def get_fc_info(fc_id):
     return fc_data
 
 
-def get_fc_members(fc_id):
+def get_fc_members(fc_id, privatekey):
     # Retrieving FC members list
 
     fc_member_request = (
@@ -56,18 +61,23 @@ def get_fc_members(fc_id):
         f"FreeCompanyMembers.*.Name"
     )
 
-    attempt = 1
+    # Adding in the user's API key if provided
+    if privatekey:
+        fc_member_request += f"&private_key={privatekey}"
+
+    attempt = 0
     while True:
         try:
             fc_member_response = requests.get(fc_member_request)
             fc_member_response.raise_for_status()
             fc_member_list = fc_member_response.json()
+            attempt += 1
+
         except HTTPError as http_err:
             if attempt <= 3:
                 logging.warning(
                     f"HTTP error occurred: {http_err}. Retrying {4 - attempt} more time(s)"
                 )
-                attempt += 1
                 sleep(attempt)
                 continue
             else:
@@ -79,7 +89,6 @@ def get_fc_members(fc_id):
                 logging.warning(
                     f"Other error occurred: {err}. Retrying {4 - attempt} more time(s)"
                 )
-                attempt += 1
                 sleep(attempt)
                 continue
             else:
@@ -91,23 +100,20 @@ def get_fc_members(fc_id):
     return fc_member_list
 
 
-def character_output(character):
-    # XIVAPI private keys allow for higher rate limits
-    """if privatekey != "":
-        requesturl = (
-            f"https://xivapi.com/character/{character}?columns=Character.Name"
-            f"&private_key={privatekey}"
-        )
-    else:"""
+def character_output(privatekey, character):
 
-    requesturl = f"https://xivapi.com/character/{character}?columns=Character.Name"
+    character_request = f"https://xivapi.com/character/{character}?columns=Character.Name"
+
+    # Adding in the user's API key if provided
+    if privatekey:
+        character_request += f"&private_key={privatekey}"
 
     char_attempt = 1
     error_count = 0
 
     while True:
         try:
-            response = requests.get(requesturl)
+            response = requests.get(character_request)
             response.raise_for_status()
             characteracjson = response.json()
         except HTTPError as char_http_err:
@@ -142,3 +148,7 @@ def character_output(character):
 
     # Current output logic only outputs to the terminal. Need to update this to allow for a file
     print(characteracjson["Character"]["Name"])
+
+
+def get_fc_census(character):
+    pass

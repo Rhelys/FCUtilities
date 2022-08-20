@@ -1,26 +1,28 @@
 import logging
 from multiprocessing.pool import Pool
 from time import time
+from functools import partial
 
 from helpers import xivapi
 
+import os.path
+
 startTime = time()
-global fc_id
-
-privatekeyfile = open("private.txt", "r")
-privatekey = privatekeyfile.read()
-
-
-def get_fc_census(character):
-    pass
-
 
 if __name__ == "__main__":
+    # Setting up the user's API Key if it exists
+    privatekey = False
+
+    if os.path.exists("private.txt"):
+        privatekeyfile = open("private.txt", "r")
+        privatekey = privatekeyfile.read()
+
     # Taking the FC ID as input for the rest of the calls
     fc_id = input("Enter FC ID: ")
 
-    fc_basic_info = xivapi.get_fc_info(fc_id)
-    fc_member_info = xivapi.get_fc_members(fc_id)
+    # Pulling in starting data for the FC
+    fc_basic_info = xivapi.get_fc_info(fc_id, privatekey)
+    fc_member_info = xivapi.get_fc_members(fc_id, privatekey)
 
     # Setting FC member count for later
     fc_member_count = fc_basic_info["FreeCompany"]["ActiveMemberCount"]
@@ -31,7 +33,7 @@ if __name__ == "__main__":
 
     with Pool(4) as p:
         # Threading calls out to get the list of characters
-        thread_finals = p.map(xivapi.character_output, fc_member_ids)
+        thread_finals = p.map(partial(xivapi.character_output, privatekey), fc_member_ids)
 
     finalTime = time() - startTime
     print(f'Script took {"{:.2f}".format(finalTime)} seconds')
